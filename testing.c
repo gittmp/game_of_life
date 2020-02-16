@@ -14,6 +14,7 @@ struct universe {
 //function declarations
 void read_in_file(FILE *infile, struct universe *u);
 void write_out_file(FILE *outfile, struct universe *u);
+int is_alive(struct universe *u, int column, int row);
 
 int main(){
 
@@ -40,13 +41,10 @@ int main(){
     }
     printf("\n");
 
-    //extracting particular element from universe structure grid
-/*     
-    int row = 0;
-    int col = 0;
-    int position_rc = row * (*no_cols) + col;
-    printf("Value at position grid[%d][%d] is %c\n", row, col, *(c_universe.grid + position_rc)); 
-*/
+    //checking if a specified cell is alive
+    int column = 3;
+    int row = 4;
+    printf("Cell (%d, %d) = %d\n", column, row, is_alive(current, column, row));
 
     //writing out grid in universe *current to OUT_FILE
     FILE *outfile = NULL;
@@ -113,5 +111,18 @@ void write_out_file(FILE *outfile, struct universe *u){
     while(*((u -> grid) + z) != '\0'){
         fprintf(outfile, "%c", *((u -> grid) + z));
         z++;
+    }
+}
+
+//function for checking if a specified cell is alive
+int is_alive(struct universe *u, int column, int row){
+    //finding element in universe grid
+    int position = row * (u -> cols) + column;
+    char cell = *((u -> grid) + position);
+
+    if(cell == '*'){
+        return 1;
+    } else {
+        return 0;
     }
 }
