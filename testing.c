@@ -19,13 +19,8 @@ int main(){
     struct universe c_universe;
     struct universe *current = &c_universe;
 
-    //opening input file
-    FILE *infile;
-
-    if((infile = fopen(IN_FILE, "r")) == NULL){
-        printf("can't open file\n");
-        return 1;
-    }
+    //creating input file pointer
+    FILE *infile = NULL;
 
     //reading data from input file into structure
     read_in_file(infile, current);
@@ -56,6 +51,12 @@ int main(){
 
 //function for reading data from file into universe structure
 void read_in_file(FILE *infile, struct universe *u){
+    //opening input file
+    if((infile = fopen(IN_FILE, "r")) == NULL){
+        printf("can't open file\n");
+        exit(1);
+    }
+
     //get line 1 of input
     char *line = calloc(MAX_SIZE, sizeof(char));
     fgets(line, MAX_SIZE, infile);
