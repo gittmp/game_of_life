@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #define IN_FILE "input1.txt"
+#define OUT_FILE "output.txt"
 #define MAX_SIZE 513
 
 //structure for holding a universe
@@ -12,6 +13,7 @@ struct universe {
 
 //function declarations
 void read_in_file(FILE *infile, struct universe *u);
+void write_out_file(FILE *outfile, struct universe *u);
 
 int main(){
 
@@ -46,10 +48,14 @@ int main(){
     printf("Value at position grid[%d][%d] is %c\n", row, col, *(c_universe.grid + position_rc)); 
 */
 
+    //writing out grid in universe *current to OUT_FILE
+    FILE *outfile = NULL;
+    write_out_file(outfile, current);
+
     return 0;
 }
 
-//function for reading data from file into universe structure
+//function for reading data from file IN_FILE into universe structure
 void read_in_file(FILE *infile, struct universe *u){
     //opening input file
     if((infile = fopen(IN_FILE, "r")) == NULL){
@@ -92,4 +98,20 @@ void read_in_file(FILE *infile, struct universe *u){
     u -> rows = no_rows;
     u -> grid = array;
 
+}
+
+//function for writing output universe to file OUT_FILE
+void write_out_file(FILE *outfile, struct universe *u){
+    //opening a file to output to
+    if((outfile = fopen(OUT_FILE, "w")) == NULL){
+        printf("can't generate output file\n");
+        exit(1);
+    }
+
+    //outputting universe to file
+    int z=0;
+    while(*((u -> grid) + z) != '\0'){
+        fprintf(outfile, "%c", *((u -> grid) + z));
+        z++;
+    }
 }
