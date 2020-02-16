@@ -15,6 +15,7 @@ struct universe {
 void read_in_file(FILE *infile, struct universe *u);
 void write_out_file(FILE *outfile, struct universe *u);
 int is_alive(struct universe *u, int column, int row);
+int will_be_alive(struct universe *u, int column, int row);
 
 int main(){
 
@@ -42,9 +43,12 @@ int main(){
     printf("\n");
 
     //checking if a specified cell is alive
-    int column = 3;
-    int row = 4;
+    int column = 5;
+    int row = 7;
     printf("Cell (%d, %d) = %d\n", column, row, is_alive(current, column, row));
+
+    //will be alive matrix
+    will_be_alive(current, column, row);
 
     //writing out grid in universe *current to OUT_FILE
     FILE *outfile = NULL;
@@ -125,4 +129,35 @@ int is_alive(struct universe *u, int column, int row){
     } else {
         return 0;
     }
+}
+
+int will_be_alive(struct universe *u, int column, int row){
+    //construct neighbourhood array
+    int neighbourhood[3][3];
+    int alive=0;
+    int n=0;
+    for(int y = row-1; y < row+2; y++){
+        int m=0;
+        for(int x = column-1; x < column+2; x++){
+            neighbourhood[n][m] = is_alive(u, x, y);
+
+            if(neighbourhood[n][m] == 1){
+                alive++;
+            }
+            m++;
+        }
+        n++;
+    }
+
+    printf("Neighbourhood of cell (%d, %d)\n", column, row);
+    for(int u=0; u<3; u++){
+        for(int v=0; v<3; v++){
+            printf("%d", neighbourhood[u][v]);
+        }
+        printf("\n");
+    }
+
+    printf("No. alive neighbours = %d\n", alive);
+
+    return 0;
 }
