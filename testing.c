@@ -1,6 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
-#define IN_FILE "input2.txt"
+#define IN_FILE "input1.txt"
 #define MAX_SIZE 513
 
 //structure for holding a universe
@@ -58,42 +58,31 @@ void read_in_file(FILE *infile, struct universe *u){
     }
 
     //get line 1 of input
-    char *line = calloc(MAX_SIZE, sizeof(char));
-    fgets(line, MAX_SIZE, infile);
+    char *array = (char*)calloc(MAX_SIZE, sizeof(char));
+    fgets(array, MAX_SIZE, infile);
 
     //calculate no_cols
     int i = 0;
-    while(*(line+i) != '\n'){
+    while(*(array+i) != '\n'){
         i++;
     }
     int no_cols = i+1;
 
-    //moving line 1 into array of full grid
-    int a = 0;
-    char *grid = calloc(no_cols, sizeof(char));
-    for(int b=0; b<no_cols; b++){
-        *(grid+a) = *(line+b);
-        a++;
-    }
+    array = realloc(array, no_cols);
 
     //populating rest of grid with remaining lines from input file
     int no_rows = 1;
+    int elements;
+    int a = no_cols;
     while(!feof(infile)){
-        grid = realloc(grid, no_cols);
-        line = calloc(no_cols, sizeof(char));
+        no_rows++;
+        elements = no_rows*no_cols;
+        array = realloc(array, elements);
 
         for(int f=0; f<no_cols; f++){
-            fscanf(infile, "%c", &line[f]);
-        }
-
-        for(int b=0; b<no_cols; b++){
-            *(grid+a) = *(line+b);
+            fscanf(infile, "%c", (array+a));
             a++;
-        }
-
-        no_rows++;
-        free(line);
-        line = NULL;
+        }    
     }
 
     fclose(infile);
@@ -101,6 +90,6 @@ void read_in_file(FILE *infile, struct universe *u){
     //updating universe structure
     u -> cols = no_cols;
     u -> rows = no_rows;
-    u -> grid = grid;
+    u -> grid = array;
 
 }
