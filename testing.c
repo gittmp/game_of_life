@@ -1,8 +1,10 @@
 #include<stdio.h>
 #include<stdlib.h>
-#define IN_FILE "input1.txt"
-#define OUT_FILE "output.txt"
 #define MAX_SIZE 513
+#define IN_FILE "input2.txt"
+#define OUT_FILE "output.txt"
+#define TEST_COL 8
+#define TEST_ROW 4
 
 //structure for holding a universe
 struct universe {
@@ -16,6 +18,7 @@ void read_in_file(FILE *infile, struct universe *u);
 void write_out_file(FILE *outfile, struct universe *u);
 int is_alive(struct universe *u, int column, int row);
 int will_be_alive(struct universe *u, int column, int row);
+int will_be_alive_torus(struct universe *u,  int column, int row);
 
 int main(){
 
@@ -43,12 +46,12 @@ int main(){
     printf("\n");
 
     //checking if a specified cell is alive
-    int column = 5;
-    int row = 7;
-    printf("Cell (%d, %d) = %d\n", column, row, is_alive(current, column, row));
+    int column = TEST_COL;
+    int row = TEST_ROW;
 
     //will be alive matrix
-    will_be_alive(current, column, row);
+    int x = will_be_alive(current, column, row);
+    printf("In next gen, Cell (%d, %d) will be %d\n", column, row, x);
 
     //writing out grid in universe *current to OUT_FILE
     FILE *outfile = NULL;
@@ -131,6 +134,7 @@ int is_alive(struct universe *u, int column, int row){
     }
 }
 
+//function for determining if a cell will be alive in the next generation (cells ouside dead)
 int will_be_alive(struct universe *u, int column, int row){
     //construct neighbourhood array
     int neighbourhood[3][3];
@@ -139,17 +143,21 @@ int will_be_alive(struct universe *u, int column, int row){
     for(int y = row-1; y < row+2; y++){
         int m=0;
         for(int x = column-1; x < column+2; x++){
-            neighbourhood[n][m] = is_alive(u, x, y);
-
-            if(neighbourhood[n][m] == 1){
-                alive++;
+            if(x < 0 || x > (u -> cols)-2 || y < 0 || y > (u -> rows)-1){
+                neighbourhood[n][m] = 0;
+            } else {
+                neighbourhood[n][m] = is_alive(u, x, y);
+                if(neighbourhood[n][m] == 1){
+                    alive++;
+                }
             }
             m++;
         }
         n++;
     }
 
-    printf("Neighbourhood of cell (%d, %d)\n", column, row);
+    //printing neighbourhood of cell
+    printf("Neighbourhood of cell (%d, %d):\n", column, row);
     for(int u=0; u<3; u++){
         for(int v=0; v<3; v++){
             printf("%d", neighbourhood[u][v]);
@@ -157,7 +165,31 @@ int will_be_alive(struct universe *u, int column, int row){
         printf("\n");
     }
 
-    printf("No. alive neighbours = %d\n", alive);
+    //calculating if cell is alive/dead
+    int cell = neighbourhood[1][1];
+    alive -= cell;
 
-    return 0;
+    //using rules to determine cell's next state
+    switch(cell){
+        case 0:
+            if(alive == 3){
+                return 1;
+            } else {
+                return 0;
+            }
+        case 1:
+            if(alive == 2 || alive == 3){
+                return 1;
+            } else {
+                return 0;
+            }
+        default:
+            printf("ERROR\n");
+            return 2;
+    }
+}
+
+//function for determining if a cell will be alive in the next generation (cells ouside wrap around like torus)
+int will_be_alive_torus(struct universe *u,  int column, int row){
+
 }
