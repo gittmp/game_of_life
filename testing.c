@@ -10,6 +10,7 @@
 struct universe {
     int cols;
     int rows;
+    int elements;
     char *grid;
 };
 
@@ -34,26 +35,34 @@ int main(){
     read_in_file(infile, current);
 
     //checking data is all correctly generated into universe structure
-    int no_cols = c_universe.cols;
-    int no_rows = c_universe.rows;
-    int array_size = no_cols * no_rows;
-    printf("INFO:\nrows=%d, cols=%d, elements=%d\n", no_rows, no_cols, array_size);
+    int elements = c_universe.elements;
+    char *array = c_universe.grid;
 
-    printf("\nINPUT GRID:\n");
-    for(int z=0; z<array_size; z++){
-        printf("%c", *((current -> grid) +z));
+    printf("INPUT GRID:\n");
+    for(int f=0; f<elements+1; f++){
+        if(*(array+f)=='\n'){
+            printf("|n\n");
+        } else if(*(array+f)=='\0'){
+            printf("|0\n");
+        } else {
+            printf("%c", *(array+f));
+        }    
     }
-    printf("\n");
 
     //evolving whole grid
     int (*rule)(struct universe *u, int column, int row) = will_be_alive_torus;
     evolve(current, rule);
 
     printf("\nOUTPUT GRID:\n");
-    for(int z=0; z<array_size; z++){
-        printf("%c", *((current -> grid) +z));
+    for(int g=0; g<elements+1; g++){
+        if(*(array+g)=='\n'){
+            printf("|n\n");
+        } else if(*(array+g)=='\0'){
+            printf("|0\n");
+        } else {
+            printf("%c", *(array+g));
+        }    
     }
-    printf("\n");
 
     //writing out grid in universe *current to OUT_FILE
     FILE *outfile = NULL;
@@ -71,7 +80,7 @@ void read_in_file(FILE *infile, struct universe *u){
     }
 
     //get line 1 of input
-    char *array = (char*)calloc(MAX_SIZE, sizeof(char));
+    char *array = (char*)malloc(MAX_SIZE);
     fgets(array, MAX_SIZE, infile);
 
     //calculate no_cols
@@ -95,16 +104,23 @@ void read_in_file(FILE *infile, struct universe *u){
         for(int f=0; f<no_cols; f++){
             fscanf(infile, "%c", (array+a));
             a++;
-        }    
+        }
     }
+
+    no_rows -= 1;
+    elements = no_cols*no_rows;
+
+    array = realloc(array, elements+1);
+    *(array+elements-1) = '\n';
+    *(array+elements) = '\0';
 
     fclose(infile);
 
     //updating universe structure
+    u -> grid = array;
     u -> cols = no_cols;
     u -> rows = no_rows;
-    u -> grid = array;
-
+    u -> elements = no_rows*no_cols;
 }
 
 //function for writing output universe to file OUT_FILE
@@ -116,11 +132,10 @@ void write_out_file(FILE *outfile, struct universe *u){
     }
 
     //outputting universe to file
-    int z=0;
-    while(*((u -> grid) + z) != '\0'){
+    for(int z=0; z<(u -> elements)-1; z++){
         fprintf(outfile, "%c", *((u -> grid) + z));
-        z++;
     }
+    fprintf(outfile, "%c", '\n');
 }
 
 //function for checking if a specified cell is alive
@@ -242,12 +257,14 @@ int will_be_alive_torus(struct universe *u,  int column, int row){
 }
 
 void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int row)){
-    int no_elems = (u -> cols) * (u -> rows);
-    char *new_grid = (char*)calloc(no_elems, sizeof(char));
+    int no_cols = u -> cols;
+    int no_rows = u -> rows;
+    int no_elems = no_cols * no_rows;
+    char *new_grid = (char*)calloc(no_elems+1, sizeof(char));
     int e = 0;
 
-    for(int r=0; r < (u -> rows); r++){
-        for(int c=0; c < (u -> cols)-1; c++){
+    for(int r=0; r < no_rows; r++){
+        for(int c=0; c < no_cols-1; c++){
             int element = rule(u, c, r);
             if(element == 1){
                 *(new_grid + e) = '*';
