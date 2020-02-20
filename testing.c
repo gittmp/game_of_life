@@ -21,6 +21,7 @@ int is_alive(struct universe *u, int column, int row);
 int will_be_alive(struct universe *u, int column, int row);
 int will_be_alive_torus(struct universe *u,  int column, int row);
 void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int row));
+void print_statistics(struct universe *u);
 
 int main(){
 
@@ -35,8 +36,8 @@ int main(){
     read_in_file(infile, current);
 
     //checking data is all correctly generated into universe structure
-    int elements = c_universe.elements;
-    char *array = c_universe.grid;
+    int elements = current -> elements;
+    char *array = current -> grid;
 
     printf("INPUT GRID:\n");
     for(int f=0; f<elements+1; f++){
@@ -63,6 +64,8 @@ int main(){
             printf("%c", *(array+g));
         }    
     }
+
+    print_statistics(current);
 
     //writing out grid in universe *current to OUT_FILE
     FILE *outfile = NULL;
@@ -279,4 +282,16 @@ void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int 
     *(new_grid + e - 1) = '\0';
 
     u -> grid = new_grid;
+}
+
+void print_statistics(struct universe *u){
+    int total_cells = (u -> rows) * ((u -> cols)-1);
+    int alive_cells = 0;
+    for(int w=0; w<(u -> elements)-1; w++){
+        if(*((u -> grid) + w) == '*'){
+            alive_cells++;
+        }
+    }
+    double percentage = (float)alive_cells/total_cells * 100;
+    printf("%d, %d, %.3f percent of cells currently alive\n", alive_cells, total_cells, percentage);
 }
