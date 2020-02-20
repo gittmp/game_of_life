@@ -1,70 +1,40 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include"gol.h"
+
 #define IN_FILE "input1.txt"
 #define OUT_FILE "output1.txt"
 #define RULE will_be_alive_torus
 #define NO_GENS 5
-
-//structure for holding a universe
-struct universe {
-    int cols;
-    int rows;
-    int elems;
-    int gen_no;
-    int *alive_past;
-    char *grid;
-};
-
-//function declarations
-void read_in_file(FILE *infile, struct universe *u);
-void write_out_file(FILE *outfile, struct universe *u);
-int is_alive(struct universe *u, int column, int row);
-int will_be_alive(struct universe *u, int column, int row);
-int will_be_alive_torus(struct universe *u,  int column, int row);
-void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int row));
-void print_statistics(struct universe *u);
+#define STATS 1
 
 int main(){
+    printf("Running GOL on input %s, for %i generations, to output file %s\n", IN_FILE, NO_GENS, OUT_FILE);
 
-    //setting up universe structures
-    struct universe c_universe;
-    struct universe *current = &c_universe;
+    //create universe
+    struct universe v;
+    struct universe *u= &v;
 
-    //creating input file pointer
+    //read in input file
     FILE *infile = NULL;
+    read_in_file(infile, u);
 
-    //reading data from input file into structure
-    read_in_file(infile, current);
-
-/*     //checking data is all correctly generated into universe structure
-    int elements = current -> elems;
-    char *array = current -> grid;
-
-    printf("INPUT GRID:\n");
-    for(int f=0; f<elements+1; f++){
-        if(*(array+f)=='\n'){
-            printf("|n\n");
-        } else if(*(array+f)=='\0'){
-            printf("|0\n");
-        } else {
-            printf("%c", *(array+f));
-        }    
-    }
-
-    printf("no. alive cells in gen %d is %d\n", current -> gen_no, current -> alive_past[0]);
-*/
-    //evolving whole grid
+    //select rule (wba or wbat)
     int (*rule)(struct universe *u, int column, int row) = RULE;
 
-    for(int h=0; h<NO_GENS; h++){
-        evolve(current, rule);
+    //evolve universe
+    for(int a=0; a<NO_GENS; a++){
+        evolve(u, rule);
     }
 
-    print_statistics(current);
+    //print stats
+    if(STATS){
+        print_statistics(u);
+    }
 
-    //writing out grid in universe *current to OUT_FILE
+    //generate output file
     FILE *outfile = NULL;
-    write_out_file(outfile, current);
+    write_out_file(outfile, u);
 
     return 0;
 }
@@ -85,11 +55,11 @@ void read_in_file(FILE *infile, struct universe *u){
     fgets(array, 513, infile);
 
     //calculate no_cols
-    int i = 0;
-    while(*(array+i) != '\n'){
-        i++;
+    int b = 0;
+    while(*(array+b) != '\n'){
+        b++;
     }
-    int no_cols = i+1;
+    int no_cols = b+1;
 
     array = realloc(array, no_cols);
     if(array == NULL){
@@ -99,7 +69,7 @@ void read_in_file(FILE *infile, struct universe *u){
     //populating rest of grid with remaining lines from input file
     int no_rows = 1;
     int elements;
-    int a = no_cols;
+    int c = no_cols;
     while(!feof(infile)){
         no_rows++;
         elements = no_rows*no_cols;
@@ -108,9 +78,9 @@ void read_in_file(FILE *infile, struct universe *u){
             exit(5);
         }
 
-        for(int f=0; f<no_cols; f++){
-            fscanf(infile, "%c", (array+a));
-            a++;
+        for(int d=0; d<no_cols; d++){
+            fscanf(infile, "%c", (array+c));
+            c++;
         }
     }
 
@@ -128,8 +98,8 @@ void read_in_file(FILE *infile, struct universe *u){
 
     //initialising alive_past array
     int alive_cells = 0;
-    for(int w=0; w<elements-1; w++){
-        if(*(array + w) == '*'){
+    for(int e=0; e<elements-1; e++){
+        if(*(array + e) == '*'){
             alive_cells++;
         }
     }
@@ -159,8 +129,8 @@ void write_out_file(FILE *outfile, struct universe *u){
     }
 
     //outputting universe to file
-    for(int z=0; z<(u -> elems)-1; z++){
-        fprintf(outfile, "%c", *((u -> grid) + z));
+    for(int f=0; f<(u -> elems)-1; f++){
+        fprintf(outfile, "%c", *((u -> grid) + f));
     }
     fprintf(outfile, "%c", '\n');
 }
@@ -283,6 +253,7 @@ int will_be_alive_torus(struct universe *u,  int column, int row){
     }
 }
 
+//function for evolving current grid of cells into next generation using rule (wba or wbat)
 void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int row)){
     //get/set up initial data
     int no_cols = u -> cols;
@@ -294,23 +265,23 @@ void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int 
     }
 
     //create new evolved array
-    int e = 0;
+    int g = 0;
     int alives = 0;
-    for(int r=0; r < no_rows; r++){
-        for(int c=0; c < no_cols-1; c++){
-            int element = rule(u, c, r);
+    for(int h=0; h<no_rows; h++){
+        for(int k=0; k < no_cols-1; k++){
+            int element = rule(u, k, h);
             if(element == 1){
-                *(new_grid + e) = '*';
+                *(new_grid + g) = '*';
                 alives++;
             } else {
-                *(new_grid + e) = '.';
+                *(new_grid + g) = '.';
             }
-            e++;
+            g++;
         }
-        *(new_grid + e) = '\n';
-        e++;
+        *(new_grid + g) = '\n';
+        g++;
     }
-    *(new_grid + e - 1) = '\0';
+    *(new_grid + g - 1) = '\0';
 
     //update universe
     u -> gen_no += 1;
@@ -318,18 +289,21 @@ void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int 
     u -> grid = new_grid;
 }
 
+//printing stats about no. alive cells currently and on average
 void print_statistics(struct universe *u){
+    //get data
     int total_cells = (u -> elems) - (u -> rows);
     int currently_alive = u -> alive_past[u -> gen_no];
     int total_alive = 0;
 
+    //calculate current percentage of alive cells
     double current_percentage = (float)currently_alive/total_cells * 100;
     printf("%.3f%c of cells currently alive\n", current_percentage, '%');
 
-    for(int g=0; g < (u -> gen_no)+2; g++){
-        total_alive += u -> alive_past[g];
+    //calculate percentage of alive cells on average
+    for(int l=0; l<(u -> gen_no)+2; l++){
+        total_alive += u -> alive_past[l];
     }
-    printf("gen_no=%d, total_cells=%d, currently_alive=%d, total_alive=%d\n", u->gen_no, total_cells, currently_alive, total_alive);
 
     double avg_percentage = ((float)total_alive/total_cells * 100)/(u -> gen_no + 1);
     printf("%.3f%c of cells alive on average\n", avg_percentage, '%');
