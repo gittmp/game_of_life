@@ -2,50 +2,8 @@
 #include<stdlib.h>
 #include"gol.h"
 
-#define IN_FILE "input1.txt"
-#define OUT_FILE "output1.txt"
-#define RULE will_be_alive_torus
-#define NO_GENS 5
-#define STATS 1
-
-int main(){
-    printf("Running GOL on input %s, for %i generations, to output file %s\n", IN_FILE, NO_GENS, OUT_FILE);
-
-    //create universe
-    struct universe v;
-    struct universe *u= &v;
-
-    //read in input file
-    FILE *infile = NULL;
-    read_in_file(infile, u);
-
-    //select rule (wba or wbat)
-    int (*rule)(struct universe *u, int column, int row) = RULE;
-
-    //evolve universe
-    for(int a=0; a<NO_GENS; a++){
-        evolve(u, rule);
-    }
-
-    //print stats
-    if(STATS){
-        print_statistics(u);
-    }
-
-    //generate output file
-    FILE *outfile = NULL;
-    write_out_file(outfile, u);
-
-    return 0;
-}
-
 //function for reading data from file IN_FILE into universe structure
 void read_in_file(FILE *infile, struct universe *u){
-    //opening input file
-    if((infile = fopen(IN_FILE, "r")) == NULL){
-        printf("can't open file\n");
-        exit(1);
-    }
 
     //get line 1 of input
     char *array = malloc(513);
@@ -104,7 +62,7 @@ void read_in_file(FILE *infile, struct universe *u){
         }
     }
 
-    int *alive_array = calloc(NO_GENS+1, sizeof(int));
+    int *alive_array = calloc((u -> no_gens)+1, sizeof(int));
     if(alive_array == NULL){
         exit(5);
     }
@@ -117,22 +75,17 @@ void read_in_file(FILE *infile, struct universe *u){
     u -> elems = elements;
     u -> gen_no = 0;
     u -> alive_past = alive_array;
-
 }
 
 //function for writing output universe to file OUT_FILE
 void write_out_file(FILE *outfile, struct universe *u){
-    //opening a file to output to
-    if((outfile = fopen(OUT_FILE, "w")) == NULL){
-        printf("can't generate output file\n");
-        exit(1);
-    }
 
     //outputting universe to file
     for(int f=0; f<(u -> elems)-1; f++){
         fprintf(outfile, "%c", *((u -> grid) + f));
     }
     fprintf(outfile, "%c", '\n');
+
 }
 
 //function for checking if a specified cell is alive
@@ -255,7 +208,7 @@ int will_be_alive_torus(struct universe *u,  int column, int row){
 
 //function for evolving current grid of cells into next generation using rule (wba or wbat)
 void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int row)){
-    //get/set up initial data
+    //get + set up initial data
     int no_cols = u -> cols;
     int no_rows = u -> rows;
     int no_elems = no_cols * no_rows;
@@ -287,6 +240,7 @@ void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int 
     u -> gen_no += 1;
     u -> alive_past[u -> gen_no] = alives;
     u -> grid = new_grid;
+
 }
 
 //printing stats about no. alive cells currently and on average

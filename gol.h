@@ -1,4 +1,11 @@
 struct universe {
+    char input_file[50];
+    char output_file[50];
+    int in_yes;
+    int out_yes;
+    int no_gens;
+    int stats;
+    int torus;
     int cols;
     int rows;
     int elems;
