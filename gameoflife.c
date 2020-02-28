@@ -66,7 +66,7 @@ int main(int argc, char *argv[]){
       case 'g':
         a++;
         int g;
-
+        
         //handling failure of atoi function
         if(strcmp(argv[a], "0") == 0){
           g = 0;
@@ -84,6 +84,7 @@ int main(int argc, char *argv[]){
           exit(1);
         }
 
+        u -> no_gens = g;
         break;
 
       case 's':
