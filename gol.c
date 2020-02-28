@@ -58,6 +58,7 @@ void read_in_file(FILE *infile, struct universe *u){
     no_rows -= 1;
     elements = no_cols*no_rows;
 
+    //specifying end of universe
     array = realloc(array, elements+1);
     if(array == NULL){
         fprintf(stderr, "Error: failed to reallocate memory for the pointer array\n");
@@ -116,6 +117,7 @@ int is_alive(struct universe *u, int column, int row){
     int position = row * (u -> cols) + column;
     char cell = *((u -> grid) + position);
 
+    //determingng if cell is alive or dead
     if(cell == '*'){
         return 1;
     } else if (cell == '.'){
