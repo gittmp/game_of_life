@@ -1,19 +1,22 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<string.h>
 #include"gol.h"
 
 //function for reading data from file IN_FILE into universe structure
 void read_in_file(FILE *infile, struct universe *u){
 
     //get line 1 of input
-    char *array = malloc(513);
+    char *array = calloc(513, sizeof(char));
     if(array == NULL){
-        exit(5);
+        fprintf(stderr, "Error: failed to assign the pointer array\n");
+        exit(1);
     }
-    fgets(array, 513, infile);
+    fgets(array, 513, infile); //need to handle error for files with over 512 columns
 
     //calculate no_cols
     int b = 0;
+
     while(*(array+b) != '\n'){
         b++;
     }
@@ -21,7 +24,8 @@ void read_in_file(FILE *infile, struct universe *u){
 
     array = realloc(array, no_cols);
     if(array == NULL){
-        exit(5);
+        fprintf(stderr, "Error: failed to reallocate memory for the pointer array\n");
+        exit(1);
     }
 
     //populating rest of grid with remaining lines from input file
@@ -33,11 +37,16 @@ void read_in_file(FILE *infile, struct universe *u){
         elements = no_rows*no_cols;
         array = realloc(array, elements);
         if(array == NULL){
-            exit(5);
+            fprintf(stderr, "Error: failed to reallocate memory for the pointer array\n");
+            exit(1);
         }
 
         for(int d=0; d<no_cols; d++){
             fscanf(infile, "%c", (array+c));
+            if(*(array+c) == '\n' && d != no_cols-1){
+                fprintf(stderr, "Error: input universe is malformed\n");
+                exit(1);
+            }
             c++;
         }
     }
@@ -47,7 +56,8 @@ void read_in_file(FILE *infile, struct universe *u){
 
     array = realloc(array, elements+1);
     if(array == NULL){
-        exit(5);
+        fprintf(stderr, "Error: failed to reallocate memory for the pointer array\n");
+        exit(1);
     }
     *(array+elements-1) = '\n';
     *(array+elements) = '\0';
@@ -56,7 +66,7 @@ void read_in_file(FILE *infile, struct universe *u){
 
     //initialising alive_past array
     int alive_cells = 0;
-    for(int e=0; e<elements-1; e++){
+    for(int e=0; e<elements; e++){
         if(*(array + e) == '*'){
             alive_cells++;
         }
@@ -64,7 +74,8 @@ void read_in_file(FILE *infile, struct universe *u){
 
     int *alive_array = calloc((u -> no_gens)+1, sizeof(int));
     if(alive_array == NULL){
-        exit(5);
+        fprintf(stderr, "Error: failed to allocate memory for the pointer alive_array\n");
+        exit(1);
     }
     *alive_array = alive_cells;
 
@@ -82,10 +93,17 @@ void write_out_file(FILE *outfile, struct universe *u){
 
     //outputting universe to file
     for(int f=0; f<(u -> elems)-1; f++){
-        fprintf(outfile, "%c", *((u -> grid) + f));
+        int print_res = fprintf(outfile, "%c", *((u -> grid) + f));
+        if(print_res < 0){
+            fprintf(stderr, "Error: failed to print to output file\n");
+            exit(1);
+        }
     }
-    fprintf(outfile, "%c", '\n');
-
+    int print_res = fprintf(outfile, "%c", '\n');
+    if(print_res < 0){
+        fprintf(stderr, "Error: failed to print to output file\n");
+        exit(1);
+    }
 }
 
 //function for checking if a specified cell is alive
@@ -96,8 +114,11 @@ int is_alive(struct universe *u, int column, int row){
 
     if(cell == '*'){
         return 1;
-    } else {
+    } else if (cell == '.'){
         return 0;
+    } else {
+        fprintf(stderr, "Error: input universe contains unidentified symbols\n");
+        exit(1);
     }
 }
 
@@ -142,8 +163,8 @@ int will_be_alive(struct universe *u, int column, int row){
                 return 0;
             }
         default:
-            printf("ERROR\n");
-            return 2;
+            fprintf(stderr, "Error: failed to determine next state of cell\n");
+            exit(1);
     }
 }
 
@@ -154,6 +175,7 @@ int will_be_alive_torus(struct universe *u,  int column, int row){
     int alive=0;
     int n=0;
 
+    //populate cell neighbourhood
     for(int y = row-1; y < row+2; y++){
         int m=0;
         for(int x = column-1; x < column+2; x++){
@@ -182,11 +204,11 @@ int will_be_alive_torus(struct universe *u,  int column, int row){
         n++;
     }
 
-    //calculating if cell is alive/dead
+    //compute no. alive cells
     int cell = neighbourhood[1][1];
     alive -= cell;
 
-    //using rules to determine cell's next state
+    //use given rules to determine cell's next state
     switch(cell){
         case 0:
             if(alive == 3){
@@ -201,8 +223,8 @@ int will_be_alive_torus(struct universe *u,  int column, int row){
                 return 0;
             }
         default:
-            printf("ERROR\n");
-            return 2;
+            fprintf(stderr, "Error: failed to determine next state of cell\n");
+            exit(1);
     }
 }
 
@@ -214,7 +236,8 @@ void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int 
     int no_elems = no_cols * no_rows;
     char *new_grid = calloc(no_elems+1, sizeof(char));
     if(new_grid == NULL){
-        exit(5);
+        fprintf(stderr, "Error: failed to allocate memory for the pointer new_grid\n");
+        exit(1);
     }
 
     //create new evolved array
@@ -226,8 +249,11 @@ void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int 
             if(element == 1){
                 *(new_grid + g) = '*';
                 alives++;
-            } else {
+            } else if(element == 0){
                 *(new_grid + g) = '.';
+            } else {
+                fprintf(stderr, "Error: rule failed to return appropriate value\n");
+                exit(1);
             }
             g++;
         }
@@ -240,26 +266,26 @@ void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int 
     u -> gen_no += 1;
     u -> alive_past[u -> gen_no] = alives;
     u -> grid = new_grid;
-
 }
 
 //printing stats about no. alive cells currently and on average
 void print_statistics(struct universe *u){
+
     //get data
     int total_cells = (u -> elems) - (u -> rows);
     int currently_alive = u -> alive_past[u -> gen_no];
     int total_alive = 0;
 
     //calculate current percentage of alive cells
-    double current_percentage = (float)currently_alive/total_cells * 100;
-    printf("%.3f%c of cells currently alive\n", current_percentage, '%');
+    double current_percentage = (double)currently_alive/total_cells * 100;
+    printf("%.3lf%c of cells currently alive\n", current_percentage, '%');
 
     //calculate percentage of alive cells on average
-    for(int l=0; l<(u -> gen_no)+2; l++){
-        total_alive += u -> alive_past[l];
+    for(int l=0; l<(u -> no_gens) + 1; l++){
+        total_alive += (u -> alive_past[l]);
     }
 
-    double avg_percentage = ((float)total_alive/total_cells * 100)/(u -> gen_no + 1);
-    printf("%.3f%c of cells alive on average\n", avg_percentage, '%');
+    double avg_percentage = ((double)total_alive/total_cells * 100)/(u -> gen_no + 1);
+    printf("%.3lf%c of cells alive on average\n", avg_percentage, '%');
 
 }

@@ -11,7 +11,7 @@ then
 else
   echo Test failed: Wrong error code
 fi
-diff  --ignore-trailing-space --ignore-blank-lines -q output.txt glider_output.txt
+diff --ignore-blank-lines output.txt glider_output.txt
 if [ $? -eq 0 ]
 then
   echo Test passed: Correct output

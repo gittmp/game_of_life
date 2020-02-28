@@ -1,0 +1,11 @@
+Errors checked for:
+-Multiple universe support
+-Malformed input
+-Zero error from atoi
+-Use of strcmp not == (couldn't get this to work for is_alive)
+-Unidentified symbols in input
+-In/out files null
+-Invalid command line arguments
+-In/out names correct through sprintf
+-In/out file params specified but no arguments
+=Conflicting command-line options

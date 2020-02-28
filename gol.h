@@ -1,6 +1,6 @@
 struct universe {
-    char input_file[50];
-    char output_file[50];
+    char *input_file;
+    char *output_file;
     int in_yes;
     int out_yes;
     int no_gens;
