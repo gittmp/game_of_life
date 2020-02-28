@@ -13,6 +13,10 @@ void read_in_file(FILE *infile, struct universe *u){
         exit(1);
     }
     fgets(array, 513, infile); //need to handle error for files with over 512 columns
+    if(*array == '\n'){
+        fprintf(stderr, "Error: input is malformed\n");
+        exit(1);
+    }
 
     //calculate no_cols
     int b = 0;
@@ -44,7 +48,7 @@ void read_in_file(FILE *infile, struct universe *u){
         for(int d=0; d<no_cols; d++){
             fscanf(infile, "%c", (array+c));
             if(*(array+c) == '\n' && d != no_cols-1){
-                fprintf(stderr, "Error: input universe is malformed\n");
+                fprintf(stderr, "Error: input is malformed\n");
                 exit(1);
             }
             c++;

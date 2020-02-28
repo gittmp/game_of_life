@@ -9,3 +9,6 @@ Errors checked for:
 -In/out names correct through sprintf
 -In/out file params specified but no arguments
 =Conflicting command-line options
+-Line break midway through input
+-Input starts with a line break / is empty
+-Large input files (32726 rows)
