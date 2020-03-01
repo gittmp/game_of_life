@@ -1,5 +1,4 @@
 gameoflife: gameoflife.o libgol.so
-	export LD_LIBRARY_PATH=`pwd`:$LD_LIBRARY_PATH
 	gcc -Wall -Wextra -pedantic -std=c11 -o gameoflife gameoflife.o -lgol -L.
 
 libgol.so: gol.o gol.h
